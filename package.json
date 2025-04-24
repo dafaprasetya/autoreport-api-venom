@@ -1,0 +1,18 @@
+{
+  "name": "autoreport-wa-api",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "prstyaa",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "express": "^5.1.0",
+    "fs": "^0.0.1-security",
+    "multer": "^1.4.5-lts.2",
+    "path": "^0.12.7",
+    "venom-bot": "^5.3.0"
+  }
+}
