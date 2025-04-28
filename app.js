@@ -72,15 +72,15 @@ app.post('/api/kirim-pesan', upload.none(), async (req, res) => {
 })
 
 app.post('/api/kirim-report', upload.single('gambar'), async (req, res) => {
-    const { nomor, pesan, user } = req.body;
+    const { nomor, pesan, user, note } = req.body;
     const gambar = req.file;
-    const caption = `\`Dari: ${user}\` \n ${pesan}. \n \`Pesan otomatis dari Autoreport\``
+    const caption = `\`Dari: ${user}\` \n\`Deskripsi Pekerjaan:\`\n${pesan}.\n\`NOTE: ${note}\` \n\`Pesan otomatis dari Autoreport\``
 
     if (!client) return res.status(500).json({ message: 'Gaada Client' });
     if (!nomor || !gambar) return res.status(400).json({ message: 'Nomor dan gambar wajib diisi' });
     const filePath = path.resolve(gambar.path);
     try {
-        console.log('ada yang report nih');
+        console.log(`si ${user} report nih`);
         await client.sendImage(nomor, filePath, gambar.originalname, caption);
         fs.unlink(filePath, (err) => {
             if (err) {
@@ -100,6 +100,6 @@ app.post('/api/kirim-report', upload.single('gambar'), async (req, res) => {
 })
 
 
-app.listen(port, () => {
-    console.log(`Server berjalan di http://localhost:${port}`);
+app.listen(port, '0.0.0.0', () => {
+    console.log(`Server berjalan di http://0.0.0.0:${port}`);
 });
