@@ -6,6 +6,21 @@ const fs = require('fs');
 const app = express();
 const port = 3000;
 
+
+function logToFile(pesan, namaFile) {
+  const logDir = path.join(__dirname, 'log');
+  if (!fs.existsSync(logDir)) {
+    fs.mkdirSync(logDir);
+  }
+  const logFile = fs.createWriteStream(path.join(logDir, `${namaFile}.txt`), { flags: 'a' });
+  const timestamp = new Date().toISOString();
+  const message = pesan;
+  const fullLog = `[${timestamp}] ${message}`;
+
+  logFile.write(fullLog + '\n');
+  console.log(fullLog);        
+}
+
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
       cb(null, './uploads'); // pastikan folder ini ada
@@ -48,7 +63,6 @@ function start(client) {
     }
   });
 }
-
 
 app.post('/api/kirim-pesan', upload.none(), async (req, res) => {
     const { nomor, pesan } = req.body;
@@ -95,8 +109,32 @@ app.post('/api/kirim-report', upload.single('gambar'), async (req, res) => {
     } catch (error) {
         res.status(500).json({success: false, error});
     }
+})
 
+app.post('/api/kirim-buktitf', upload.single('gambar'), async (req, res) => {
+    const { nomor, pesan, user, note } = req.body;
+    const gambar = req.file;
+    const caption = `${user} \n Kode Pemesanan: ${pesan}.\n\`NOTE\`: \n\`Pesan otomatis dari Autoreport\``
 
+    if (!client) return res.status(500).json({ message: 'Gaada Client' });
+    if (!nomor || !gambar) return res.status(400).json({ message: 'Nomor dan gambar wajib diisi' });
+    const filePath = path.resolve(gambar.path);
+    try {
+        logToFile(`${user} mengirimkan bukti pembayaran dengan kode pemesanan: ${pesan}`, 'buktiTfLog');
+        await client.sendImage(nomor, filePath, gambar.originalname, caption);
+        fs.unlink(filePath, (err) => {
+            if (err) {
+                console.error('Gagal hapus file:', err);
+            } else {
+                console.log('File berhasil dihapus:', filePath);
+            }
+        });
+        
+        res.status(200).json({success: true});
+
+    } catch (error) {
+        res.status(500).json({success: false, error});
+    }
 })
 
 
